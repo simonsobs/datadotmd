@@ -12,10 +12,12 @@ from datadotmd.database.service import (
 from datadotmd.system.scanner import FileSystemScanner
 
 
-def scan_and_update_database(session: Session, scanner: FileSystemScanner | None = None):
+def scan_and_update_database(
+    session: Session, scanner: FileSystemScanner | None = None
+):
     """
     Scan the filesystem and update the database with current state.
-    
+
     Parameters
     ----------
     session : Session
@@ -40,7 +42,7 @@ def _scan_directory_recursive(
 ) -> None:
     """
     Recursively scan a directory and its children.
-    
+
     Parameters
     ----------
     session : Session
@@ -98,14 +100,14 @@ def _scan_directory_recursive(
         for item in full_path.iterdir():
             if item.is_dir() and not item.name.startswith("."):
                 relative_item_path = scanner.get_relative_path(item)
-                
+
                 # Get or create child directory record
                 child_dir_record = get_or_create_directory(
                     session=session,
                     path=relative_item_path,
                     parent_id=parent_dir_record.id,
                 )
-                
+
                 # Recursively scan the child directory
                 _scan_directory_recursive(session, scanner, child_dir_record)
     except (PermissionError, OSError):

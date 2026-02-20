@@ -6,7 +6,7 @@ import asyncio
 from pathlib import Path
 from typing import Annotated, Callable, Iterable
 
-from fastapi import Depends, Request
+from fastapi import Depends
 from fastapi.templating import Jinja2Templates
 from structlog import get_logger
 from structlog.types import FilteringBoundLogger
@@ -70,11 +70,11 @@ TemplateDependency = Annotated[Jinja2Templates, Depends(templates)]
 def templateify(template_name: str | None = None, log_name: str | None = None):
     """
     Decorator to apply a template to a route.
-    
+
     Your route should return a dictionary which is added to the template context.
     You must have `request: Request` and `templates: TemplateDependency` in your kwargs.
     If log_name is not None, you must also have `log: LoggerDependency`.
-    
+
     Parameters
     ----------
     template_name : str | None

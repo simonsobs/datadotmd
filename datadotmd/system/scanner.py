@@ -14,7 +14,7 @@ class FileSystemScanner:
     def __init__(self, root_path: Path | None = None):
         """
         Initialize the filesystem scanner.
-        
+
         Parameters
         ----------
         root_path : Path | None
@@ -25,7 +25,7 @@ class FileSystemScanner:
     def find_all_datamd_files(self) -> Generator[tuple[Path, Path], None, None]:
         """
         Find all DATA.md files in the root path.
-        
+
         Yields
         ------
         tuple[Path, Path]
@@ -36,7 +36,7 @@ class FileSystemScanner:
 
         for root, dirs, files in os.walk(self.root_path):
             root_path = Path(root)
-            
+
             # Check if DATA.md exists in this directory
             if "DATA.md" in files:
                 datamd_path = root_path / "DATA.md"
@@ -46,12 +46,12 @@ class FileSystemScanner:
     def get_directory_last_modified(self, directory: Path) -> datetime:
         """
         Get the most recent modification time of any file in a directory.
-        
+
         Parameters
         ----------
         directory : Path
             Directory to check
-        
+
         Returns
         -------
         datetime
@@ -61,10 +61,10 @@ class FileSystemScanner:
             return datetime.utcnow()
 
         latest_time = datetime.fromtimestamp(directory.stat().st_mtime)
-        
+
         try:
             for item in directory.rglob("*"):
-                if item.is_file():
+                if item.is_file() and item.name != "DATA.md":
                     mtime = datetime.fromtimestamp(item.stat().st_mtime)
                     if mtime > latest_time:
                         latest_time = mtime
@@ -77,12 +77,12 @@ class FileSystemScanner:
     def read_datamd_content(self, datamd_path: Path) -> str:
         """
         Read the content of a DATA.md file.
-        
+
         Parameters
         ----------
         datamd_path : Path
             Path to the DATA.md file
-        
+
         Returns
         -------
         str
@@ -96,12 +96,12 @@ class FileSystemScanner:
     def get_relative_path(self, absolute_path: Path) -> str:
         """
         Get a path relative to the root.
-        
+
         Parameters
         ----------
         absolute_path : Path
             Absolute path
-        
+
         Returns
         -------
         str
@@ -115,7 +115,7 @@ class FileSystemScanner:
     def find_all_directories(self) -> Generator[Path, None, None]:
         """
         Find all directories under the root path that don't contain a DATA.md file.
-        
+
         Yields
         ------
         Path
@@ -136,18 +136,19 @@ class FileSystemScanner:
                     print("Directory has DATA.md, skipping children:", dir_path)
                     dirs.remove(dir)
 
-
-    def get_directory_tree(self, directory: Path, parent_has_datamd: bool = False) -> dict:
+    def get_directory_tree(
+        self, directory: Path, parent_has_datamd: bool = False
+    ) -> dict:
         """
         Get a tree structure of a directory.
-        
+
         Parameters
         ----------
         directory : Path
             Directory to analyze
         parent_has_datamd : bool
             Whether any parent directory has a DATA.md file
-        
+
         Returns
         -------
         dict
@@ -183,11 +184,15 @@ class FileSystemScanner:
             pass
 
         # Show warning only if: has files, no DATA.md, and not covered by parent
-        tree["needs_warning"] = tree["has_files"] and not has_datamd and not parent_has_datamd
+        tree["needs_warning"] = (
+            tree["has_files"] and not has_datamd and not parent_has_datamd
+        )
 
         return tree
 
-    def get_clean_directory_tree(self, directory: Path, parent_has_datamd: bool = False) -> dict:
+    def get_clean_directory_tree(
+        self, directory: Path, parent_has_datamd: bool = False
+    ) -> dict:
         """
         Get a clean tree structure of a directory, removing trailing directories at the
         bottom level.
@@ -199,11 +204,7 @@ class FileSystemScanner:
             if node["has_datamd"]:
                 return True
             else:
-                has_below = any(
-                    node_has_datamd_below(
-                        x
-                    ) for x in node["children"]
-                )
+                has_below = any(node_has_datamd_below(x) for x in node["children"])
             return has_below
 
         def clean_node(node):

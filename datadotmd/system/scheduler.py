@@ -16,14 +16,14 @@ logger = get_logger()
 class DirectoryScanScheduler:
     """
     Background scheduler for scanning directories at regular intervals.
-    
+
     Runs in a separate thread to avoid blocking the async event loop.
     """
 
     def __init__(self, interval_minutes: int = 60):
         """
         Initialize the scheduler.
-        
+
         Parameters
         ----------
         interval_minutes : int
@@ -40,7 +40,7 @@ class DirectoryScanScheduler:
             if self._running:
                 logger.warning("Scheduler already running")
                 return
-            
+
             self._running = True
             self._thread = threading.Thread(
                 target=self._run_scheduler,
@@ -59,9 +59,9 @@ class DirectoryScanScheduler:
             if not self._running:
                 logger.warning("Scheduler not running")
                 return
-            
+
             self._running = False
-        
+
         # Wait for thread to finish (with timeout)
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=5)
@@ -71,7 +71,7 @@ class DirectoryScanScheduler:
         """Main scheduler loop (runs in background thread)."""
         # Schedule the scan job
         schedule.every(self.interval_minutes).minutes.do(self._scan_job)
-        
+
         # Run the scheduler loop
         while self._running:
             try:
