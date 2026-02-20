@@ -1,6 +1,7 @@
 """Configuration for the DataDotMD application using pydantic-settings."""
 
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlparse
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import notifiers
@@ -38,6 +39,15 @@ class Settings(BaseSettings):
     # Notifications -- Note you need to set the NOTIFIERS_X environment variables
     # to give the correct credentials.
     notifier_name: str = "mock"
+
+    # Authentication settings
+    required_grant: str = "simonsobs"
+    auth_type: Literal["mock", "soauth"] = "mock"
+    authentication_base_url: str = "http://localhost:8000/auth"
+    app_id: str = "your-app-id"
+    client_secret: str = "your-client-secret"
+    public_key: str = "your-public-key"
+    key_pair_type: str = "kpt"
 
     @property
     def notifier(self):

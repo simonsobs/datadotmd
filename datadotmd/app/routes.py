@@ -18,11 +18,13 @@ from datadotmd.database.service import (
 )
 from datadotmd.system.scanner import FileSystemScanner
 from datadotmd.system.sync import scan_and_update_database
+from starlette.authentication import requires
 
 router = APIRouter()
 
 
 @router.get("/")
+@requires(settings.required_grant)
 @templateify(template_name="index.html")
 async def index(
     request: Request,
@@ -75,6 +77,7 @@ async def index(
 
 
 @router.get("/browse/{path:path}")
+@requires(settings.required_grant)
 @templateify(template_name="browse.html")
 async def browse(
     request: Request,
@@ -123,6 +126,7 @@ async def browse(
 
 
 @router.get("/history/{file_id}")
+@requires(settings.required_grant)
 @templateify(template_name="htmx/history.html")
 async def get_history(
     request: Request,
@@ -139,7 +143,8 @@ async def get_history(
 
 
 @router.post("/scan")
-async def scan_filesystem() -> dict:
+@requires(settings.required_grant)
+async def scan_filesystem(request: Request) -> dict:
     """Trigger a filesystem scan to update the database."""
     scanner = FileSystemScanner()
     with get_session() as session:
@@ -149,6 +154,7 @@ async def scan_filesystem() -> dict:
 
 
 @router.get("/htmx/file-list")
+@requires(settings.required_grant)
 @templateify(template_name="htmx/file_list.html")
 async def htmx_file_list(
     request: Request,

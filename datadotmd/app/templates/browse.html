@@ -34,17 +34,15 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Directory Structure</h2>
                 <div class="space-y-1">
                     {% macro render_tree(node, level=0) %}
-                        <div class="{% if level > 0 %}ml-{{ level * 4 }}{% endif %}">
+                        <div class="{% if level > 0 %}ml-{{ level }}{% endif %}">
                             {% if node.is_dir %}
                                 <div class="flex items-center py-1 {% if node.path == current_path %}bg-blue-50 rounded px-2 -mx-2{% endif %}">
                                     {% if node.has_datamd and node.children %}
-                                    <button class="toggle-folder w-4 h-4 mr-1 p-0 bg-none border-none cursor-pointer text-gray-600 hover:text-gray-900 flex items-center justify-center" aria-expanded="false">
+                                    <button class="toggle-folder w-4 h-4 mr-1 -ml-5 p-0 bg-none border-none cursor-pointer text-gray-600 hover:text-gray-900 flex items-center justify-center" aria-expanded="false">
                                         <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                         </svg>
                                     </button>
-                                    {% else %}
-                                    <div class="w-4 mr-1"></div>
                                     {% endif %}
                                     <svg class="w-4 h-4 text-blue-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
@@ -88,7 +86,7 @@
         <div class="lg:col-span-2">
             {% if has_datamd %}
             <div class="bg-white shadow rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">DATA.md</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">DATA.md for {{ current_path }}</h2>
                 {% if datamd_record %}
                 <div class="text-sm text-gray-500 mb-4">
                     <p>Last updated: {{ datamd_record.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>

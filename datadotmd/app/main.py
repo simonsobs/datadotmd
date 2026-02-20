@@ -1,12 +1,15 @@
 """Main FastAPI application for DataDotMD."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from datadotmd.app.config import settings
 from datadotmd.database.service import init_db
 from datadotmd.system.scheduler import DirectoryScanScheduler
+from soauth.toolkit.fastapi import global_setup, mock_global_setup
 
 
 # Global scheduler instance
@@ -44,6 +47,23 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         root_path=root_path,
     )
+
+    if settings.auth_type == "soauth":
+        app = global_setup(
+            app=app,
+            app_base_url=settings.app_base_url,
+            authentication_base_url=settings.authentication_base_url,
+            app_id=settings.app_id,
+            client_secret=settings.client_secret,
+            public_key=settings.public_key,
+            key_pair_type=settings.key_pair_type,
+        )
+    else:
+        app = mock_global_setup(app, grants=[settings.required_grant])
+
+    static_dir = Path(__file__).parent / "static"
+    static = StaticFiles(directory=static_dir)
+    app.mount("/static", static, name="static")
 
     # Import and include routers
     from datadotmd.app import routes
