@@ -1,0 +1,22 @@
+<!-- History partial for HTMX updates -->
+<div class="space-y-4">
+    {% if history %}
+        {% for item in history %}
+        <div class="border-l-4 border-blue-500 pl-4 py-2">
+            <div class="text-sm text-gray-500 mb-2">
+                {{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </div>
+            <details class="cursor-pointer">
+                <summary class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                    View version
+                </summary>
+                <div class="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                    <pre class="whitespace-pre-wrap">{{ item.content }}</pre>
+                </div>
+            </details>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-sm text-gray-500">No history available.</p>
+    {% endif %}
+</div>

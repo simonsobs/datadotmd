@@ -1,0 +1,77 @@
+<!-- File list partial for HTMX updates -->
+<ul role="list" class="divide-y divide-gray-200">
+    {% for file in files %}
+    <li>
+        <a href="{{ root_path }}/browse/{{ file.directory_path }}" class="block hover:bg-gray-50">
+            <div class="px-4 py-4 sm:px-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-blue-600 truncate">
+                            {{ file.path }}
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Directory: {{ file.directory_path or 'root' }}
+                        </p>
+                    </div>
+                    <div class="ml-4 flex-shrink-0 flex flex-col items-end">
+                        <p class="text-sm text-gray-500">
+                            Updated: {{ file.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            Data modified: {{ file.data_last_modified.strftime('%Y-%m-%d %H:%M') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Pagination controls -->
+{% if total_pages > 1 %}
+<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+    <div class="flex-1 flex justify-between sm:hidden">
+        {% if has_prev %}
+        <button hx-get="{{ root_path }}/htmx/file-list?page={{ page - 1 }}" hx-target="#file-list" hx-swap="innerHTML" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Previous
+        </button>
+        {% endif %}
+        {% if has_next %}
+        <button hx-get="{{ root_path }}/htmx/file-list?page={{ page + 1 }}" hx-target="#file-list" hx-swap="innerHTML" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Next
+        </button>
+        {% endif %}
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Showing page <span class="font-medium">{{ page }}</span> of <span class="font-medium">{{ total_pages }}</span>
+            </p>
+        </div>
+        <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                {% if has_prev %}
+                <button hx-get="{{ root_path }}/htmx/file-list?page={{ page - 1 }}" hx-target="#file-list" hx-swap="innerHTML" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Previous
+                </button>
+                {% else %}
+                <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                    Previous
+                </span>
+                {% endif %}
+                
+                {% if has_next %}
+                <button hx-get="{{ root_path }}/htmx/file-list?page={{ page + 1 }}" hx-target="#file-list" hx-swap="innerHTML" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Next
+                </button>
+                {% else %}
+                <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400 cursor-not-allowed">
+                    Next
+                </span>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</div>
+{% endif %}

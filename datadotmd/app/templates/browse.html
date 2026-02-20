@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_name }} - Browse {{ path or root_directory_name }}{% endblock %}
+
+{% block content %}
+<div class="px-4 sm:px-0">
+    <div class="mb-6">
+        <nav class="text-sm font-medium text-gray-500 mb-2">
+            <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                    <a href="{{ root_path }}/browse/" class="text-blue-600 hover:text-blue-800">{{ root_directory_name }}</a>
+                </li>
+                {% if path %}
+                {% set parts = path.split('/') %}
+                {% for part in parts %}
+                <li class="flex items-center">
+                    <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    {% set partial_path = parts[:loop.index]|join('/') %}
+                    <a href="{{ root_path }}/browse/{{ partial_path }}" class="{% if loop.last %}text-gray-700{% else %}text-blue-600 hover:text-blue-800{% endif %}">{{ part }}</a>
+                </li>
+                {% endfor %}
+                {% endif %}
+            </ol>
+        </nav>
+        <h1 class="text-3xl font-bold text-gray-900">{{ path or root_directory_name }}</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Directory tree -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow rounded-lg p-4">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Directory Structure</h2>
+                <div class="space-y-1">
+                    {% macro render_tree(node, level=0) %}
+                        <div class="{% if level > 0 %}ml-{{ level * 4 }}{% endif %}">
+                            {% if node.is_dir %}
+                                <div class="flex items-center py-1 {% if node.path == current_path %}bg-blue-50 rounded px-2 -mx-2{% endif %}">
+                                    {% if node.has_datamd and node.children %}
+                                    <button class="toggle-folder w-4 h-4 mr-1 p-0 bg-none border-none cursor-pointer text-gray-600 hover:text-gray-900 flex items-center justify-center" aria-expanded="false">
+                                        <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </button>
+                                    {% else %}
+                                    <div class="w-4 mr-1"></div>
+                                    {% endif %}
+                                    <svg class="w-4 h-4 text-blue-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                                    </svg>
+                                    {% if node.has_datamd %}
+                                    <a href="{{ root_path }}/browse/{{ node.path }}" class="text-sm {% if node.path == current_path %}font-semibold text-blue-700{% else %}text-blue-600 hover:text-blue-800{% endif %}">{{ node.name }}</a>
+                                    {% else %}
+                                    <span class="text-sm {% if node.path == current_path %}font-semibold{% endif %} text-gray-600">{{ node.name }}</span>
+                                    {% endif %}
+                                    {% if node.needs_warning %}
+                                    <svg class="w-4 h-4 text-yellow-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                                {% if node.children %}
+                                {% set is_ancestor_of_current = node.path and current_path.startswith(node.path + '/') %}
+                                {% set should_be_hidden = node.has_datamd and not (node.path == current_path or is_ancestor_of_current) %}
+                                <div class="folder-children {% if should_be_hidden %}hidden{% endif %}" style="{% if should_be_hidden %}display: none;{% endif %}">
+                                    {% for child in node.children %}
+                                        {{ render_tree(child, level + 1) }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="flex items-center py-1">
+                                    <svg class="w-4 h-4 text-gray-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-sm text-gray-600">{{ node.name }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endmacro %}
+                    {{ render_tree(tree) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA.md content and history -->
+        <div class="lg:col-span-2">
+            {% if has_datamd %}
+            <div class="bg-white shadow rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">DATA.md</h2>
+                {% if datamd_record %}
+                <div class="text-sm text-gray-500 mb-4">
+                    <p>Last updated: {{ datamd_record.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <p>Data last modified: {{ datamd_record.data_last_modified.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                </div>
+                {% endif %}
+                <div class="prose max-w-none">
+                    {{ datamd_html|safe }}
+                </div>
+            </div>
+
+            {% if history %}
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">History</h2>
+                <div class="space-y-4">
+                    {% for item in history %}
+                    <div class="border-l-4 border-blue-500 pl-4 py-2">
+                        <div class="text-sm text-gray-500 mb-2">
+                            {{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </div>
+                        <details class="cursor-pointer">
+                            <summary class="text-sm font-medium text-gray-700 hover:text-gray-900">
+                                View version
+                            </summary>
+                            <div class="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                                <pre class="whitespace-pre-wrap">{{ item.content }}</pre>
+                            </div>
+                        </details>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Warning:</strong> This directory does not have a DATA.md file.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    // Handle folder collapse/expand toggles
+    document.querySelectorAll('.toggle-folder').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const childrenDiv = button.closest('div').nextElementSibling;
+            if (childrenDiv && childrenDiv.classList.contains('folder-children')) {
+                const isHidden = childrenDiv.style.display === 'none' || childrenDiv.classList.contains('hidden');
+                if (isHidden) {
+                    childrenDiv.classList.remove('hidden');
+                    childrenDiv.style.display = '';
+                    button.setAttribute('aria-expanded', 'true');
+                    button.querySelector('svg').style.transform = 'rotate(90deg)';
+                } else {
+                    childrenDiv.classList.add('hidden');
+                    childrenDiv.style.display = 'none';
+                    button.setAttribute('aria-expanded', 'false');
+                    button.querySelector('svg').style.transform = 'rotate(0deg)';
+                }
+            }
+        });
+    });
+
+    // Expand all ancestor folders of the currently highlighted directory
+    window.addEventListener('load', () => {
+        // Find the highlighted directory element by class
+        const highlightedElement = document.querySelector('.bg-blue-50');
+        if (highlightedElement) {
+            // Walk up the DOM tree and expand parent folders
+            let currentElement = highlightedElement;
+            while (currentElement) {
+                // Look for folder-children siblings
+                let nextSibling = currentElement.nextElementSibling;
+                if (nextSibling && nextSibling.classList.contains('folder-children')) {
+                    // Expand it
+                    nextSibling.classList.remove('hidden');
+                    nextSibling.style.display = '';
+                    
+                    // Update the toggle button if it exists
+                    const toggleButton = currentElement.querySelector('.toggle-folder');
+                    if (toggleButton) {
+                        toggleButton.setAttribute('aria-expanded', 'true');
+                        const svg = toggleButton.querySelector('svg');
+                        if (svg) {
+                            svg.style.transform = 'rotate(90deg)';
+                        }
+                    }
+                }
+                
+                // Move up to parent's parent to continue traversal
+                currentElement = currentElement.parentElement?.parentElement;
+            }
+        }
+    });
+</script>
+{% endblock %}
