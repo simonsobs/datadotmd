@@ -60,7 +60,7 @@ templates = setup_templating(
         "app_base_url": settings.app_base_url,
         "root_path": settings.get_root_path(),
         "auth_type": settings.auth_type,
-        "auth_url": f"{settings.authentication_base_url}/{settings.app_id}"
+        "auth_url": f"{settings.authentication_base_url}/login/{settings.app_id}"
         if settings.auth_type == "soauth"
         else None,
         "required_grant": settings.required_grant,

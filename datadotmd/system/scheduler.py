@@ -8,6 +8,7 @@ import schedule
 from structlog import get_logger
 
 from datadotmd.system.sync import scan_and_update_database
+from datadotmd.database.service import get_session
 
 
 logger = get_logger()
@@ -85,7 +86,8 @@ class DirectoryScanScheduler:
         """Job that runs on schedule to scan the directory."""
         try:
             logger.info("Starting scheduled directory scan")
-            scan_and_update_database()
+            with get_session() as session:
+                scan_and_update_database(session=session)
             logger.info("Completed scheduled directory scan")
         except Exception as e:
             logger.exception("Error during scheduled scan", error=str(e))

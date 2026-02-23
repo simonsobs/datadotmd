@@ -2,8 +2,12 @@
 
 import markdown
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from sqlmodel import select
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 from datadotmd.app.config import settings
 from datadotmd.app.templating import TemplateDependency, templateify
@@ -16,7 +20,7 @@ from datadotmd.database.service import (
     get_root_directory,
     get_session,
 )
-from datadotmd.system.scanner import FileSystemScanner
+from datadotmd.system.slack import validate as slack_validate
 from datadotmd.system.sync import scan_and_update_database
 from starlette.authentication import requires
 
@@ -24,7 +28,6 @@ router = APIRouter()
 
 
 @router.get("/")
-@requires(settings.required_grant)
 @templateify(template_name="index.html")
 async def index(
     request: Request,
@@ -142,15 +145,26 @@ async def get_history(
     }
 
 
-@router.post("/scan")
-@requires(settings.required_grant)
-async def scan_filesystem(request: Request) -> dict:
-    """Trigger a filesystem scan to update the database."""
-    scanner = FileSystemScanner()
+def _scan_and_update_database_job():
+    """Job that runs on schedule to scan the directory."""
+    logging.info("Starting unscheduled (from API) directory scan")
     with get_session() as session:
-        scan_and_update_database(session, scanner)
+        scan_and_update_database(session=session)
+    logging.info("Completed unscheduled (from API) directory scan")
 
-    return {"status": "success", "message": "Filesystem scan completed"}
+
+@router.post("/scan")
+async def scan_filesystem(request: Request, background_tasks: BackgroundTasks) -> str:
+    """Trigger a filesystem scan to update the database."""
+    if settings.required_grant not in request.auth.scopes:
+        if not await slack_validate(
+            request=request, signing_secret=settings.slack_signing_secret
+        ):
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+    background_tasks.add_task(_scan_and_update_database_job)
+
+    return "Scan initiated, the database and web pages will be updated shortly"
 
 
 @router.get("/htmx/file-list")

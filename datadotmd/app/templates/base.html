@@ -31,7 +31,7 @@
                     <div class="flex items-center">
                         {% if not request.user.is_authenticated %}
                         <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-md">
-                            <a href="{{ auth_url }}" class="text-white">Login <img class="inline-flex items-center" src="{{ root_path }}/static/so_pixel.png"></a>
+                            <a href="{{ auth_url }}" referrerpolicy="origin-when-cross-origin" class="text-white">Log In <img class="inline-flex items-center" src="{{ root_path }}/static/so_pixel.png"></a>
                         </button>
                         {% else %}
                         <button class="text-white-600 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md">

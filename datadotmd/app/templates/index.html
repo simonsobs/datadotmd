@@ -3,7 +3,7 @@
 {% block title %}{{ app_name }} - Home{% endblock %}
 
 {% block content %}
-{% if auth_type == "mock" or (request.user.is_authenticated and (required_grant in request.user.scopes) and auth_type == "soauth") %}
+{% if auth_type == "mock" or (request.user.is_authenticated and (required_grant in request.auth.scopes) and auth_type == "soauth") %}
 <div class="px-4 sm:px-0">
     <h1 class="text-3xl font-bold text-gray-900 mb-6">DATA.md Files</h1>
     
@@ -112,7 +112,7 @@
 {% else %}
 <div class="bg-white shadow rounded-lg p-6">
     <h2 class="text-xl font-semibold text-gray-900 mb-4">Access Denied</h2>
-    <p class="text-gray-700">You do not have the required permissions to view the DATA.md files. You have: {{ request.user.scopes }}</p>
+    <p class="text-gray-700">You do not have the required permissions to view the DATA.md files. You have: {{ request.auth.scopes }}</p>
 </div>
 {% endif %}
 {% endblock %}

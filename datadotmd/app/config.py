@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     public_key: str = "your-public-key"
     key_pair_type: str = "kpt"
 
+    # Slack setup
+    slack_signing_secret: str = "your-slack-signing-secret"
+
     @property
     def notifier(self):
         """Get the configured notifier instance."""

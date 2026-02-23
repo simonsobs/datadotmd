@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
         _scheduler = DirectoryScanScheduler(
             interval_minutes=settings.auto_scan_interval_minutes
         )
+        _scheduler._scan_job()  # Run on startup
         _scheduler.start()
 
     yield
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
         debug=settings.debug,
         lifespan=lifespan,
         root_path=root_path,
+        openapi_url=f"{root_path}/openapi.json" if settings.debug else None,
     )
 
     if settings.auth_type == "soauth":
