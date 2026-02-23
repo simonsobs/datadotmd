@@ -7,8 +7,6 @@ from sqlmodel import select
 
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 from datadotmd.app.config import settings
 from datadotmd.app.templating import TemplateDependency, templateify
 from datadotmd.database.models import DataMdFile, Directory
@@ -24,6 +22,7 @@ from datadotmd.system.slack import validate as slack_validate
 from datadotmd.system.sync import scan_and_update_database
 from starlette.authentication import requires
 
+logging.basicConfig(level=logging.INFO)
 router = APIRouter()
 
 
