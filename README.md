@@ -1,22 +1,18 @@
 # DataDotMD
 
-A web application for browsing and tracking DATA.md files across directory structures.
+A small web app for browsing and tracking DATA.md files across a directory tree.
 
 ## Features
 
-- **Homepage**: Lists all DATA.md files with pagination, sorted by most recently updated data
-- **Directory Browser**: Navigate through directories and view DATA.md content
-- **History Tracking**: Maintains version history of DATA.md files
-- **Missing File Warnings**: Highlights directories without DATA.md files
-- **Filesystem Scanner**: Automatically scans and updates the database
+- **Browse + history**: Directory tree, DATA.md rendering, and version history
+- **Pagination**: Ordered by most recently updated underlying data
+- **Scan on demand**: POST /scan triggers a background scan (Slack-signed or grant)
+- **Auto scan**: Optional scheduler runs scans on an interval
+- **Notifications**: New/changed DATA.md and underlying data updates
 
 ## Technology Stack
 
-- **FastAPI**: Web framework
-- **HTMX**: Dynamic content updates
-- **SQLModel**: Database ORM
-- **Tailwind CSS**: Styling
-- **Pydantic Settings**: Configuration management
+- FastAPI, Jinja2, HTMX, SQLModel, Pydantic Settings
 
 ## Installation
 
@@ -43,64 +39,24 @@ Start the development server:
 uvicorn datadotmd.app.main:app --reload
 ```
 
+Or:
+
+```bash
+./run.sh
+```
+
 The application will be available at http://localhost:8000
 
 ## Configuration
 
 Configuration is managed through environment variables or a `.env` file:
 
-- `APP_NAME`: Application name (default: "DataDotMD")
-- `APP_BASE_URL`: Base URL for the application (default: "http://localhost:8000")
-- `DEBUG`: Enable debug mode (default: False)
-- `DATA_ROOT`: Root directory to scan for DATA.md files (default: "data")
-- `DATABASE_URL`: SQLite database URL (default: "sqlite:///./datadotmd.db")
-- `ITEMS_PER_PAGE`: Number of items per page (default: 10)
+- `APP_NAME`, `APP_BASE_URL`, `DEBUG`
+- `DATA_ROOT`, `DATABASE_URL`, `ITEMS_PER_PAGE`
+- `ENABLE_AUTO_SCAN`, `AUTO_SCAN_INTERVAL_MINUTES`
+- `NOTIFIER_NAME` (see notifiers library credentials)
+- `ROOT_DIRECTORY_NAME`
+- `AUTH_TYPE` (mock|soauth), `REQUIRED_GRANT`
+- `AUTHENTICATION_BASE_URL`, `APP_ID`, `CLIENT_SECRET`, `PUBLIC_KEY`, `KEY_PAIR_TYPE`
+- `SLACK_SIGNING_SECRET`
 
-## Usage
-
-1. **Initial Scan**: Click the "Scan Filesystem" button to scan your data directory and populate the database
-2. **Browse Files**: Navigate to the homepage to see all DATA.md files
-3. **View Directory**: Click on any DATA.md file to view its content and the directory structure
-4. **View History**: On the directory page, expand the history section to see previous versions
-
-## Project Structure
-
-```
-datadotmd/
-  app/
-    main.py              # FastAPI application
-    config.py            # Configuration settings
-    routes.py            # API routes
-    templating.py        # Template utilities
-    templates/           # Jinja2 templates
-      base.html          # Base template
-      index.html         # Homepage
-      browse.html        # Directory browser
-      htmx/              # HTMX partials
-        file_list.html
-        history.html
-  system/
-    scanner.py           # Filesystem scanner
-    sync.py              # Database synchronization
-  database/
-    models.py            # SQLModel models
-    service.py           # Database service layer
-```
-
-## Development
-
-Install development dependencies:
-
-```bash
-pip install -e ".[dev]"
-```
-
-Run tests:
-
-```bash
-pytest
-```
-
-## License
-
-MIT
