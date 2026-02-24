@@ -55,3 +55,8 @@ class Directory(SQLModel, table=True):
 
     last_scanned: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     data_last_modified: datetime
+
+
+# class DataMdFileFTS(SQLModel, table=True):
+#     """FTS5 virtual table for full-text search over DATA.md files."""
+#     This should _not_ be defined as a regular SQLModel table, but is included here for reference.

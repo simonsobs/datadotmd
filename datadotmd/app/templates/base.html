@@ -18,12 +18,15 @@
                     <div class="flex-shrink-0 flex items-center">
                         <a href="{{ root_path }}/" class="text-xl font-bold text-blue-600">{{ app_name }}</a>
                     </div>
-                    <div class="ml-6 flex space-x-8">
+                    <div class="ml-6 flex space-x-2">
                         <a href="{{ root_path }}/" class="inline-flex items-center px-1 pt-1 border-b-2 {% if request.url.path == root_path + '/' or request.url.path == root_path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
                             Home
                         </a>
                         <a href="{{ root_path }}/browse/" class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/browse' in request.url.path or '/browse' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
                             Browse
+                        </a>
+                        <a href="{{ root_path }}/search" class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/search' in request.url.path or '/search' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
+                            Search
                         </a>
                     </div>
                 </div>

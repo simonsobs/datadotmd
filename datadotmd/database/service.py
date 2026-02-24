@@ -4,6 +4,7 @@ import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from datadotmd.app.config import settings
@@ -22,6 +23,52 @@ engine = create_engine(settings.database_url, echo=settings.debug)
 def init_db():
     """Initialize the database, creating all tables."""
     SQLModel.metadata.create_all(engine)
+
+    # Create FTS5 virtual table for full-text search with external content
+    with engine.begin() as connection:
+        connection.execute(
+            text("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS datamd_files_fts 
+                USING fts5(
+                    path,
+                    content,
+                    content='datamd_files',
+                    content_rowid=id
+                )
+            """)
+        )
+
+        # Create trigger for INSERT
+        connection.execute(
+            text("""
+            CREATE TRIGGER IF NOT EXISTS datamd_files_ai AFTER INSERT ON datamd_files BEGIN
+                INSERT INTO datamd_files_fts(rowid, path, content) 
+                VALUES (new.id, new.path, new.current_content);
+            END
+        """)
+        )
+
+        # Create trigger for UPDATE
+        connection.execute(
+            text("""
+            CREATE TRIGGER IF NOT EXISTS datamd_files_au AFTER UPDATE ON datamd_files BEGIN
+                INSERT INTO datamd_files_fts(datamd_files_fts, rowid, path, content) 
+                VALUES('delete', old.id, old.path, old.current_content);
+                INSERT INTO datamd_files_fts(rowid, path, content) 
+                VALUES (new.id, new.path, new.current_content);
+            END
+        """)
+        )
+
+        # Create trigger for DELETE
+        connection.execute(
+            text("""
+            CREATE TRIGGER IF NOT EXISTS datamd_files_ad AFTER DELETE ON datamd_files BEGIN
+                INSERT INTO datamd_files_fts(datamd_files_fts, rowid, path, content) 
+                VALUES('delete', old.id, old.path, old.current_content);
+            END
+        """)
+        )
 
 
 def get_session() -> Session:
@@ -311,3 +358,57 @@ def get_root_directory(session: Session) -> Directory:
         session.commit()
         session.refresh(root)
     return root
+
+
+def search_datamd_files(
+    session: Session,
+    query: str,
+    offset: int = 0,
+    limit: int = 10,
+) -> tuple[list[DataMdFile], int]:
+    """
+    Search DATA.md files using FTS5.
+
+    Parameters
+    ----------
+    session : Session
+        Database session
+    query : str
+        Search query (FTS5 syntax supported)
+    offset : int
+        Number of records to skip
+    limit : int
+        Maximum number of records to return
+
+    Returns
+    -------
+    tuple[list[DataMdFile], int]
+        List of matching DATA.md files and total count
+    """
+
+    query = f'"{query}"'
+
+    # Search using FTS5
+    results = session.exec(
+        text("""
+            select dmd.* from datamd_files dmd
+            join datamd_files_fts fts on dmd.id = fts.rowid
+            where fts.datamd_files_fts MATCH :query
+            order by rank limit :limit offset :offset
+            """).bindparams(query=query, limit=limit, offset=offset)
+    )
+
+    total_results = session.exec(
+        text("""
+            select count(*) from datamd_files dmd
+            join datamd_files_fts fts on dmd.id = fts.rowid
+            where fts.datamd_files_fts MATCH :query
+            """).bindparams(query=query)
+    ).scalar_one()
+
+    files = results.fetchall()
+
+    # Render the files as DataMdFile objects
+    files = [DataMdFile.model_validate(file) for file in files]
+
+    return list(files), total_results

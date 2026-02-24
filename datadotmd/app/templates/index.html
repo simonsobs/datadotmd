@@ -7,6 +7,23 @@
 <div class="px-4 sm:px-0">
     <h1 class="text-3xl font-bold text-gray-900 mb-6">DATA.md Files</h1>
     
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <form action="{{ root_path }}/search" method="get" class="flex gap-2">
+            <input
+                type="text"
+                name="q"
+                placeholder="Search by filename, path, or content..."
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button
+                type="submit"
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+                Search
+            </button>
+        </form>
+    </div>
+    
     {% if total_count == 0 %}
     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
         <div class="flex">

@@ -17,6 +17,7 @@ from datadotmd.database.service import (
     get_directory_by_path,
     get_root_directory,
     get_session,
+    search_datamd_files,
 )
 from datadotmd.system.slack import validate as slack_validate
 from datadotmd.system.sync import scan_and_update_database
@@ -38,6 +39,7 @@ def markdownify(content: str) -> str:
     base = base.replace("<ul>", '<ul class="list-disc list-inside my-2">')
 
     return base
+
 
 @router.get("/")
 @templateify(template_name="index.html")
@@ -82,6 +84,75 @@ async def index(
     total_pages = (total_count + settings.items_per_page - 1) // settings.items_per_page
 
     return {
+        "files": formatted_files,
+        "page": page,
+        "total_pages": total_pages,
+        "total_count": total_count,
+        "has_prev": page > 1,
+        "has_next": page < total_pages,
+    }
+
+
+@router.get("/search")
+@templateify(template_name="search.html")
+async def search(
+    request: Request,
+    templates: TemplateDependency,
+    q: str = "",
+    page: int = 1,
+) -> dict:
+    """Search DATA.md files using full-text search."""
+    if page < 1:
+        page = 1
+
+    if not q:
+        return {
+            "query": q,
+            "files": [],
+            "page": page,
+            "total_pages": 0,
+            "total_count": 0,
+            "has_prev": False,
+            "has_next": False,
+        }
+
+    offset = (page - 1) * settings.items_per_page
+
+    with get_session() as session:
+        files, total_count = search_datamd_files(
+            session,
+            query=q,
+            offset=offset,
+            limit=settings.items_per_page,
+        )
+
+        # Format the data for the template
+        formatted_files = []
+        for datamd_file in files:
+            # Get the directory that has this DATA.md file
+            statement = select(Directory).where(
+                Directory.datamd_file_id == datamd_file.id
+            )
+            directory = session.exec(statement).first()
+
+            formatted_files.append(
+                {
+                    "id": datamd_file.id,
+                    "path": datamd_file.path,
+                    "directory_path": directory.path if directory else "",
+                    "updated_at": datamd_file.updated_at,
+                    "data_last_modified": datamd_file.data_last_modified,
+                }
+            )
+
+    total_pages = (
+        (total_count + settings.items_per_page - 1) // settings.items_per_page
+        if total_count > 0
+        else 1
+    )
+
+    return {
+        "query": q,
         "files": formatted_files,
         "page": page,
         "total_pages": total_pages,
