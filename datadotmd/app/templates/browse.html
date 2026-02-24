@@ -37,7 +37,7 @@
                         <div class="{% if level > 0 %}ml-{{ level }}{% endif %}">
                             {% if node.is_dir %}
                                 <div class="flex items-center py-1 {% if node.path == current_path %}bg-blue-50 rounded px-2 -mx-2{% endif %}">
-                                    {% if node.has_datamd and node.children %}
+                                    {% if node.children and node.path %}
                                     <button class="toggle-folder w-4 h-4 mr-1 -ml-5 p-0 bg-none border-none cursor-pointer text-gray-600 hover:text-gray-900 flex items-center justify-center" aria-expanded="false">
                                         <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -59,8 +59,10 @@
                                     {% endif %}
                                 </div>
                                 {% if node.children %}
-                                {% set is_ancestor_of_current = node.path and current_path.startswith(node.path + '/') %}
-                                {% set should_be_hidden = node.has_datamd and not (node.path == current_path or is_ancestor_of_current) %}
+                                {% set is_root = not node.path %}
+                                {% set is_ancestor_of_current = is_root or current_path.startswith(node.path + '/') %}
+                                {% set is_descendant_of_current = node.path and node.path.startswith(current_path + '/') %}
+                                {% set should_be_hidden = not (is_root or node.path == current_path or is_ancestor_of_current or is_descendant_of_current) %}
                                 <div class="folder-children {% if should_be_hidden %}hidden{% endif %}" style="{% if should_be_hidden %}display: none;{% endif %}">
                                     {% for child in node.children %}
                                         {{ render_tree(child, level + 1) }}
