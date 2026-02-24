@@ -26,6 +26,19 @@ logging.basicConfig(level=logging.INFO)
 router = APIRouter()
 
 
+def markdownify(content: str) -> str:
+    """Convert markdown content to HTML."""
+    base = markdown.markdown(content, extensions=["extra", "codehilite"])
+
+    # Now Tailwind-ify the HTML
+    base = base.replace("<h1>", '<h1 class="text-3xl font-bold my-4">')
+    base = base.replace("<h2>", '<h2 class="text-2xl font-bold my-3">')
+    base = base.replace("<h3>", '<h3 class="text-xl font-bold my-2">')
+    base = base.replace("<p>", '<p class="my-2">')
+    base = base.replace("<ul>", '<ul class="list-disc list-inside my-2">')
+
+    return base
+
 @router.get("/")
 @templateify(template_name="index.html")
 async def index(
@@ -110,9 +123,7 @@ async def browse(
             if datamd_file:
                 datamd_content = datamd_file.current_content
                 # Convert markdown to HTML
-                datamd_html = markdown.markdown(
-                    datamd_content, extensions=["extra", "codehilite"]
-                )
+                datamd_html = markdownify(datamd_content)
                 history = get_datamd_history(session, datamd_file.id)
 
     return {
