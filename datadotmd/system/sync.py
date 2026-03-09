@@ -2,6 +2,8 @@
 
 from sqlmodel import Session
 
+from structlog import get_logger
+
 from datadotmd.database.models import Directory
 from datadotmd.database.service import (
     create_or_update_datamd_file,
@@ -12,6 +14,7 @@ from datadotmd.database.service import (
 from datadotmd.system.scanner import FileSystemScanner
 from datadotmd.app.config import settings
 
+logger = get_logger()
 
 def scan_and_update_database(
     session: Session, scanner: FileSystemScanner | None = None
@@ -111,6 +114,11 @@ def _scan_directory_recursive(
 
                 # Recursively scan the child directory
                 _scan_directory_recursive(session, scanner, child_dir_record)
-    except (PermissionError, OSError):
+    except (PermissionError, OSError) as e:
         # If we can't access the directory, just skip it
+        logger.info(
+            "Skipping directory due to access error",
+            directory=str(full_path),
+            error=str(e),
+        )
         pass

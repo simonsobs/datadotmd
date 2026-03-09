@@ -5,7 +5,7 @@ import markdown
 from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from sqlmodel import select
 
-import logging
+import structlog
 
 from datadotmd.app.config import settings
 from datadotmd.app.templating import TemplateDependency, templateify
@@ -23,7 +23,7 @@ from datadotmd.system.slack import validate as slack_validate
 from datadotmd.system.sync import scan_and_update_database
 from starlette.authentication import requires
 
-logging.basicConfig(level=logging.INFO)
+logger = structlog.get_logger()
 router = APIRouter()
 
 
@@ -229,10 +229,10 @@ async def get_history(
 
 def _scan_and_update_database_job():
     """Job that runs on schedule to scan the directory."""
-    logging.info("Starting unscheduled (from API) directory scan")
+    logger.info("Starting unscheduled (from API) directory scan")
     with get_session() as session:
         scan_and_update_database(session=session)
-    logging.info("Completed unscheduled (from API) directory scan")
+    logger.info("Completed unscheduled (from API) directory scan")
 
 
 @router.post("/scan")
