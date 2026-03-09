@@ -37,6 +37,7 @@ def markdownify(content: str) -> str:
     base = base.replace("<h3>", '<h3 class="text-xl font-bold my-2">')
     base = base.replace("<p>", '<p class="my-2">')
     base = base.replace("<ul>", '<ul class="list-disc list-inside my-2">')
+    base = base.replace("<a href", "<a class='text-blue-600 hover:underline' href")
 
     return base
 
