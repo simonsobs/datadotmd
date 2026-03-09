@@ -100,11 +100,17 @@ def _scan_directory_recursive(
         )
 
     # Process subdirectories
-    try:
-        for item in full_path.iterdir():
-            if item.is_dir() and not item.name.startswith("."):
-                relative_item_path = scanner.get_relative_path(item)
+    for item in full_path.iterdir():
+        if item.is_dir() and not item.name.startswith("."):
+            relative_item_path = scanner.get_relative_path(item)
 
+            logger.debug(
+                "Processing subdirectory",
+                directory=str(full_path),
+                subdirectory=str(item),
+            )
+
+            try:
                 # Get or create child directory record
                 child_dir_record = get_or_create_directory(
                     session=session,
@@ -114,11 +120,11 @@ def _scan_directory_recursive(
 
                 # Recursively scan the child directory
                 _scan_directory_recursive(session, scanner, child_dir_record)
-    except (PermissionError, OSError) as e:
-        # If we can't access the directory, just skip it
-        logger.info(
-            "Skipping directory due to access error",
-            directory=str(full_path),
-            error=str(e),
-        )
-        pass
+            except (PermissionError, OSError) as e:
+                # If we can't access the directory, just skip it
+                logger.info(
+                    "Skipping directory due to access error",
+                    directory=str(full_path),
+                    error=str(e),
+                )
+                pass
