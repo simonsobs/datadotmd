@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from datadotmd.app.config import settings
@@ -60,6 +61,9 @@ def create_app() -> FastAPI:
             public_key=settings.public_key,
             key_pair_type=settings.key_pair_type,
         )
+
+        app.add_exception_handler(401, lambda request, exc: RedirectResponse(url=f"{settings.authentication_base_url}/login/{settings.app_id}"))
+        app.add_exception_handler(403, lambda request, exc: RedirectResponse(url=f"{settings.authentication_base_url}/login/{settings.app_id}"))
     else:
         app = mock_global_setup(app, grants=[settings.required_grant])
 
