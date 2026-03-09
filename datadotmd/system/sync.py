@@ -10,6 +10,7 @@ from datadotmd.database.service import (
     update_directory,
 )
 from datadotmd.system.scanner import FileSystemScanner
+from datadotmd.app.config import settings
 
 
 def scan_and_update_database(
@@ -58,7 +59,7 @@ def _scan_directory_recursive(
     else:
         full_path = scanner.root_path
 
-    if not full_path.exists() or not full_path.is_dir():
+    if not full_path.exists() or not full_path.is_dir() or full_path in settings.skip_directories_for_notify:
         return
 
     # Check if this directory has a DATA.md file

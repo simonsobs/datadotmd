@@ -6,6 +6,7 @@ from typing import Optional
 
 from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine, select
+from pathlib import Path
 
 from datadotmd.app.config import settings
 from datadotmd.database.models import DataMdFile, DataMdHistory, Directory
@@ -188,6 +189,12 @@ def create_or_update_datamd_file(
         if abs(existing.data_last_modified - data_last_modified) > timedelta(minutes=5):
             existing.data_last_modified = data_last_modified
             session.add(existing)
+
+
+            for path in settings.skip_directories_for_notify:
+                if path in Path(existing.path).parents:
+                    notified_already = True
+                    break
 
             if not notified_already:
                 notify_data_updated(

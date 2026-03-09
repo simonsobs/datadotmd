@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # Auto-scan settings
     enable_auto_scan: bool = False
     auto_scan_interval_minutes: int = 60
+    skip_directories_for_notify: list[Path] = []
 
     # Notifications -- Note you need to set the NOTIFIERS_X environment variables
     # to give the correct credentials.
