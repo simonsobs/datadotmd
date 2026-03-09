@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,29 +21,33 @@
                         <a href="{{ root_path }}/" class="text-xl font-bold text-blue-600">{{ app_name }}</a>
                     </div>
                     <div class="ml-6 flex space-x-2">
-                        <a href="{{ root_path }}/" class="inline-flex items-center px-1 pt-1 border-b-2 {% if request.url.path == root_path + '/' or request.url.path == root_path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
+                        <a href="{{ root_path }}/"
+                            class="inline-flex items-center px-1 pt-1 border-b-2 {% if request.url.path == root_path + '/' or request.url.path == root_path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
                             Home
                         </a>
-                        <a href="{{ root_path }}/browse/" class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/browse' in request.url.path or '/browse' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
+                        <a href="{{ root_path }}/browse/"
+                            class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/browse' in request.url.path or '/browse' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
                             Browse
                         </a>
-                        <a href="{{ root_path }}/search" class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/search' in request.url.path or '/search' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
+                        <a href="{{ root_path }}/search"
+                            class="inline-flex items-center px-1 pt-1 border-b-2 {% if root_path + '/search' in request.url.path or '/search' in request.url.path %}border-blue-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} text-sm font-medium">
                             Search
                         </a>
                     </div>
                 </div>
                 {% if auth_url %}
-                    <div class="flex items-center">
-                        {% if not request.user.is_authenticated %}
-                        <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-md">
-                            <a href="{{ auth_url }}" referrerpolicy="origin-when-cross-origin" class="text-white">Log In <img class="inline-flex items-center" src="{{ root_path }}/static/so_pixel.png"></a>
-                        </button>
-                        {% else %}
-                        <button class="text-white-600 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md">
-                            <a href="{{ root_path }}/logout" class="text-white">Logout</a>
-                        </button>
-                        {% endif %}
-                    </div>
+                <div class="flex items-center">
+                    {% if not request.user.is_authenticated %}
+                    <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-md">
+                        <a href="{{ auth_url }}" referrerpolicy="origin-when-cross-origin" class="text-white">Log In
+                            <img class="inline-flex items-center" src="{{ root_path }}/static/so_pixel.png"></a>
+                    </button>
+                    {% else %}
+                    <button class="text-white-600 bg-red-600 hover:bg-red-700 px-3 py-2 rounded-md">
+                        <a href="{{ root_path }}/logout" class="text-white">Logout</a>
+                    </button>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -59,6 +65,16 @@
         </div>
     </footer>
 
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath:  {'[+]': [['$', '$']]},
+            },
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>
